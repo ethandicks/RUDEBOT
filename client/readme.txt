@@ -1,7 +1,13 @@
-
 This is the playstation controller code for the remote RUDEBOT.
 
 Requirements:
+
+Linux:
+
+pygame - can install via "sudo apt-get install python-pygame".
+
+
+OS X:
 
 libusb for osx - download based on your osx version from here: http://www.ellert.se/twain-sane/
   * "port" version of libusb does *not* work for me with the sixpair tool, needed this one!
