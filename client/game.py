@@ -1,4 +1,3 @@
-
 """Client code allowing remote, robotic avatar controls via playstation wireless sixaxis controller."""
 
 import operator
@@ -11,6 +10,10 @@ import pygame
 
 
 DEBUG = True
+HEADLIGHT_INCREMENT = 34
+HEADLIGHT_MAX = 100
+HEADLIGHT_OFF_THRESHOLD = 10
+HEADLIGHT_CMD_PREFIX = 'L'
 MAX_NECK_LEFT = 30
 MAX_NECK_RIGHT = 140
 NECK_INCREMENT_DEGREES = 5
@@ -67,6 +70,9 @@ socket_defs = {'rover': (ROVER_ADDY, '\\', 'C', '+000\0+000\n', None, 'C', 'C', 
 sockets = {}
 last_responses = {}
 last_keepalive = time.time()
+
+# value for optional headlight
+headlight = 0 # range 0-100 percent
 
 surface = None
 # Unused as of yet...
@@ -375,6 +381,14 @@ while True:
 
     if bready('playstation', now):
         break   # PS button == exit/quit
+
+    # headlight
+    if bready('select', now):
+        headlight = (headlight + HEADLIGHT_INCREMENT) % HEADLIGHT_MAX
+        if (headlight < HEADLIGHT_LOW_THRESHOLD):
+          headlight = 0
+        cmd = '%s%s' % (HEADLIGHT_CMD_PREFIX, zero_pad(headlight))
+        rover_cmd(cmd)
 
     # neck
     if bready('l_trigger_bottom', now) or bready('r_trigger_bottom', now):
