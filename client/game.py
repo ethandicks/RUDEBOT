@@ -385,7 +385,7 @@ while True:
     # headlight
     if bready('select', now):
         headlight = (headlight + HEADLIGHT_INCREMENT) % HEADLIGHT_MAX
-        if (headlight < HEADLIGHT_LOW_THRESHOLD):
+        if (headlight < HEADLIGHT_OFF_THRESHOLD):
           headlight = 0
         cmd = '%s%s' % (HEADLIGHT_CMD_PREFIX, zero_pad(headlight))
         rover_cmd(cmd)
