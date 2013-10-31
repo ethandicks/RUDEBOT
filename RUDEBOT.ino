@@ -40,6 +40,16 @@ const char rightk2 = 'd';
 const char stop = ' ';
 const char disconnect = '\\';
 
+// What pin is the headlight connected to?
+#define HEADLIGHT 1
+#if HEADLIGHT
+const int headlight_pin = 6; // most likely 6 or 7 depending if motor shield modded to work with WiFi or not
+
+const char headlight_cmd  = 'L';  // for Socket mode (PWM the headlight LED)
+const char headlightk_on  = 'O';  // for Client mode (simple full-on-full-off toggle)
+const char headlightk_off = 'F';
+#endif
+
 // String table to save memory
 const char* ramString = "\nFree SRAM: %d\r\n";
 const char* hello = "Hello!\r\n";
@@ -104,6 +114,11 @@ void logger(const char *fmt, ...) {
   */  
 }
 
+// Return true if this pin provides PWM output (Arduino Duemilanove/Uno version)
+int has_pwm(int pin) {
+  return (pin == 3 || pin == 5 || pin == 6 || pin == 9 || pin == 10 || pin == 11);
+}
+
 void setup() {
   // Heartbeat if a client is connected (serial doesn't need to receive anything during run)
 //  pinMode(0, OUTPUT);
@@ -114,6 +129,12 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
+
+#if HEADLIGHT
+  // Initialize headlight pin
+  pinMode(headlight_pin, OUTPUT);
+  digitalWrite(headlight_pin, LOW);
+#endif
 
   // Initialize motors
   md.init();
@@ -196,6 +217,14 @@ void loop() {
           killClient();
           return;        
           break;
+#if HEADLIGHT
+        case headlightk_on:
+          digitalWrite(headline_pin, HIGH);
+          break;
+        case headlightk_off:
+          digitalWrite(headline_pin, LOW)
+          break;
+#endif HEADLIGHT
         case forwardk:
         case forwardk2:
           drivetime = thrust_drivetime;
@@ -286,24 +315,36 @@ void loop() {
         bAvail -= bRead;
       }
             
-      if (bRead == CMDLEN-1) {        
-        int m1speed = atoi(cmdC);
-        int m2speed = atoi(cmdC+5);
-        if (m1speed >= 200) {
-          m1speed = 200;
+      if (bRead == CMDLEN-1) {
+        // intercept headlight commands
+        if (cmdC[0] == headlight_cmd) {
+          int headlight_percent = atoi(cmdC+1); // ignore the second parameter in the command
+          int headlight_pwm = (255 * headlight_percent) / 100;
+          if (has_pwm(headlight_pin))
+            analogWrite(headlight_pin, headlight_pwm);
+          else
+            digitalWrite(headlight_pin, (headlight_pin > 0));
         }
-        if (m1speed <= -200) {
-          m1speed = -200;
-        }
-        if (m2speed >= 200) {
-          m2speed = 200;
-        }
-        if (m2speed <= -200) {
-          m2speed = -200;
-        }
+        // must be a motor speed command
+        else {
+          int m1speed = atoi(cmdC);
+          int m2speed = atoi(cmdC+5);
+          if (m1speed >= 200) {
+            m1speed = 200;
+          }
+          if (m1speed <= -200) {
+            m1speed = -200;
+          }
+          if (m2speed >= 200) {
+            m2speed = 200;
+          }
+          if (m2speed <= -200) {
+            m2speed = -200;
+          }
           
-        // Motors wired in reverse (compensate here)
-        md.setSpeeds(-m1speed, -m2speed);        
+          // Motors wired in reverse (compensate here)
+          md.setSpeeds(-m1speed, -m2speed);        
+        }
         // reset command
         memset(cmdC, NULL, CMDLEN);
   
