@@ -325,7 +325,7 @@ void loop() {
           if (has_pwm(headlight_pin))
             analogWrite(headlight_pin, headlight_pwm);
           else
-            digitalWrite(headlight_pin, (headlight_pin > 0));
+            digitalWrite(headlight_pin, (headlight_pwm > 0));
         }
         // must be a motor speed command
         else {
