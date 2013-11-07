@@ -316,9 +316,11 @@ void loop() {
       }
             
       if (bRead == CMDLEN-1) {
+        int m1speed = atoi(cmdC);
+        int m2speed = atoi(cmdC+5);
         // intercept headlight commands
         if (cmdC[0] == headlight_cmd) {
-          int headlight_percent = atoi(cmdC+1); // ignore the second parameter in the command
+          int headlight_percent = m2speed; // get headlight brightness from second parameter
           int headlight_pwm = (255 * headlight_percent) / 100;
           if (has_pwm(headlight_pin))
             analogWrite(headlight_pin, headlight_pwm);
@@ -327,8 +329,6 @@ void loop() {
         }
         // must be a motor speed command
         else {
-          int m1speed = atoi(cmdC);
-          int m2speed = atoi(cmdC+5);
           if (m1speed >= 200) {
             m1speed = 200;
           }
