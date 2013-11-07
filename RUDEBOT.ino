@@ -219,10 +219,10 @@ void loop() {
           break;
 #if HEADLIGHT
         case headlightk_on:
-          digitalWrite(headline_pin, HIGH);
+          digitalWrite(headlight_pin, HIGH);
           break;
         case headlightk_off:
-          digitalWrite(headline_pin, LOW)
+          digitalWrite(headlight_pin, LOW);
           break;
 #endif HEADLIGHT
         case forwardk:
